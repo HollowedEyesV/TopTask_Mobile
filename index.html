@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TopTask — Organizador de Tareas</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-theme="unam">
+
+  <!-- ════════════════ SIDEBAR ════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header brand-header">
+      <svg class="brand-logo" viewBox="0 0 64 64" role="img" aria-label="Logo de TopTask" focusable="false">
+        <rect class="logo-card logo-glow-shape" x="12" y="14" width="38" height="38" rx="9"></rect>
+        <rect class="logo-card logo-offset" x="18" y="8" width="38" height="38" rx="9"></rect>
+        <path class="logo-check" d="M25 31.5l7.2 7.2L45 23.8"></path>
+        <path class="logo-mark" d="M45 14h4a7 7 0 0 1 7 7v4"></path>
+      </svg>
+      <span class="logo-text">TopTask</span>
+      <button class="sidebar-toggle" id="sidebarToggle" title="Ocultar menú">◀</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="dashboard">
+        <span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span>
+      </button>
+      <button class="nav-btn" data-view="list">
+        <span class="nav-icon">≡</span><span class="nav-label">Lista</span>
+      </button>
+      <button class="nav-btn" data-view="cards">
+        <span class="nav-icon">⊞</span><span class="nav-label">Tarjetas</span>
+      </button>
+      <button class="nav-btn" data-view="kanban">
+        <span class="nav-icon weekly-map-icon" aria-hidden="true"></span><span class="nav-label">Carga semanal</span>
+      </button>
+      <button class="nav-btn" data-view="calendar">
+        <span class="nav-icon">▦</span><span class="nav-label">Calendario</span>
+      </button>
+      <button class="nav-btn" data-view="horarios">
+        <span class="nav-icon">⏱</span><span class="nav-label">Horarios</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-section">
+      <p class="sidebar-label">Tema</p>
+      <div class="theme-switcher" aria-label="Seleccionar tema visual">
+        <button class="theme-btn theme-swatch theme-swatch-unam active" data-theme="unam" title="Azul y dorado" aria-label="Tema azul y dorado"></button>
+        <button class="theme-btn theme-swatch theme-swatch-ipn" data-theme="ipn" title="Guinda y claro" aria-label="Tema guinda y claro"></button>
+        <button class="theme-btn theme-swatch theme-swatch-dark" data-theme="dark" title="Oscuro" aria-label="Tema oscuro"></button>
+        <button class="theme-btn theme-swatch theme-swatch-neon" data-theme="neon" title="Neón" aria-label="Tema neón"></button>
+        <button class="theme-btn theme-swatch theme-swatch-clean" data-theme="clean" title="Claro limpio" aria-label="Tema claro limpio"></button>
+      </div>
+    </div>
+<div class="sidebar-section">
+      <p class="sidebar-label">Filtros</p>
+      <select class="filter-select" id="filterMateria">
+        <option value="">Todas las materias</option>
+      </select>
+      <select class="filter-select" id="filterPrioridad">
+        <option value="">Toda prioridad</option>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja">Baja</option>
+      </select>
+      <select class="filter-select" id="filterEstado">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="en-progreso">En progreso</option>
+        <option value="terminado">Terminado</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section sidebar-actions">
+      <button class="action-btn" id="btnExport">↑ Exportar JSON</button>
+      <label class="action-btn" for="importInput">↓ Importar JSON</label>
+      <input type="file" id="importInput" accept=".json" style="display:none" />
+    </div>
+  </aside>
+
+  <!-- ════════════════ MAIN ════════════════ -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-empezar" id="btnEmpezar" title="Analizar tareas y recomendar por dónde empezar">🎯 ¿Por dónde empiezo?</button>
+        <button class="btn-primary" id="btnNuevaTarea">+ Nueva tarea</button>
+      </div>
+    </header>
+
+    <!-- ── VIEW: DASHBOARD ── -->
+    <section class="view active" id="view-dashboard">
+      <div class="dashboard-grid">
+
+        <div class="dash-card wide" id="cargaSemanal">
+          <div class="dash-card-header">
+            <span class="dash-card-icon">⚡</span>
+            <h2>Carga semanal</h2>
+          </div>
+          <div class="carga-content">
+            <div class="carga-badge" id="cargaBadge">—</div>
+            <div class="carga-stats" id="cargaStats"></div>
+            <p class="carga-msg" id="cargaMsg"></p>
+            <p class="carga-tip" id="cargaTip"></p>
+          </div>
+        </div>
+
+        <div class="dash-card wide" id="alertasCriticas">
+          <div class="dash-card-header">
+            <span class="dash-card-icon">⚠</span>
+            <h2>Alertas</h2>
+          </div>
+          <ul class="dash-list app-alert-list" id="listaAlertas"></ul>
+        </div>
+
+        <div class="dash-card" id="tareasHoy">
+          <div class="dash-card-header">
+            <span class="dash-card-icon">📋</span>
+            <h2>Tareas de hoy</h2>
+          </div>
+          <ul class="dash-list" id="listaTareasHoy"></ul>
+        </div>
+
+        <div class="dash-card" id="proximasEntregas">
+          <div class="dash-card-header">
+            <span class="dash-card-icon">⏰</span>
+            <h2>Próximas entregas</h2>
+          </div>
+          <ul class="dash-list" id="listaProximas"></ul>
+        </div>
+
+        <div class="dash-card" id="materiasCarga">
+          <div class="dash-card-header">
+            <span class="dash-card-icon">📚</span>
+            <h2>Materias</h2>
+          </div>
+          <div id="materiasBars"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── VIEW: LISTA ── -->
+    <section class="view" id="view-list">
+      <div id="listaContainer"></div>
+    </section>
+
+    <!-- ── VIEW: TARJETAS ── -->
+    <section class="view" id="view-cards">
+      <div class="cards-grid" id="cardsContainer"></div>
+    </section>
+
+    <!-- ── VIEW: CARGA SEMANAL ── -->
+    <section class="view" id="view-kanban">
+      <div class="kanban-board" id="kanbanBoard"></div>
+    </section>
+
+    <!-- ── VIEW: CALENDARIO ── -->
+    <section class="view" id="view-calendar">
+      <div class="calendar-wrap">
+        <div class="calendar-header">
+          <button class="cal-nav" id="calPrev">‹</button>
+          <h2 id="calTitle"></h2>
+          <button class="cal-nav" id="calNext">›</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+      <div class="calendar-detail" id="calendarDetail" style="display:none">
+        <h3 id="calDetailTitle"></h3>
+        <ul id="calDetailList"></ul>
+      </div>
+    </section>
+
+    <!-- ── VIEW: HORARIOS ── -->
+    <section class="view" id="view-horarios">
+      <div id="horariosWrap"></div>
+    </section>
+
+  </main>
+
+  <!-- ════════════════ MODAL TAREA ════════════════ -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalTarea">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nueva tarea</h2>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Título -->
+        <div class="field-group">
+          <label class="field-label">Título <span class="required">*</span></label>
+          <input type="text" class="field-input" id="fTitulo" placeholder="Ej: Resolver ejercicios de cálculo" maxlength="120" />
+        </div>
+
+        <!-- Materia -->
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Materia</label>
+            <div class="materia-row">
+              <select class="field-input" id="fMateria"></select>
+              <button class="btn-inline" id="btnNuevaMateria">+</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Prioridad</label>
+            <select class="field-input" id="fPrioridad">
+              <option value="alta">🔴 Alta</option>
+              <option value="media" selected>🟡 Media</option>
+              <option value="baja">🟢 Baja</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fecha y horas -->
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Fecha de entrega</label>
+            <input type="date" class="field-input" id="fFecha" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Tiempo estimado (hrs)</label>
+            <input type="number" class="field-input" id="fHoras" min="0.5" max="99" step="0.5" placeholder="2" />
+          </div>
+        </div>
+
+        <!-- Tipo -->
+        <div class="field-group">
+          <label class="field-label">Tipo de tarea</label>
+          <div class="radio-group">
+            <label class="radio-opt">
+              <input type="radio" name="tipo" value="individual" checked /> Individual
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="tipo" value="equipo" /> Equipo
+            </label>
+          </div>
+        </div>
+
+        <!-- Campos de equipo -->
+        <div id="equipoCampos" style="display:none">
+          <div class="field-group">
+            <label class="field-label">Integrantes (separados por coma)</label>
+            <input type="text" class="field-input" id="fIntegrantes" placeholder="Ana, Luis, Sofía" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Responsable</label>
+            <input type="text" class="field-input" id="fResponsable" placeholder="Nombre del responsable" />
+          </div>
+        </div>
+
+        <!-- Estado -->
+        <div class="field-group">
+          <label class="field-label">Estado</label>
+          <div class="estado-group">
+            <button class="estado-btn active" data-estado="pendiente">Pendiente</button>
+            <button class="estado-btn" data-estado="en-progreso">En progreso</button>
+            <button class="estado-btn" data-estado="terminado">Terminado</button>
+          </div>
+        </div>
+
+        <!-- Progreso (0–100) -->
+        <div class="field-group">
+          <label class="field-label">Avance: <strong id="fProgresoLbl">0</strong>%</label>
+          <div class="progress-modal-row">
+            <input type="range" id="fProgresoRange" class="progress-range-input" min="0" max="100" step="1" value="0" aria-valuemin="0" aria-valuemax="100" />
+            <input type="number" id="fProgresoNum" class="field-input progress-num-input" min="0" max="100" step="1" value="0" />
+          </div>
+          <small class="field-hint">Si marcas la tarea como terminada se guardará al 100%.</small>
+        </div>
+
+        <!-- Subtareas -->
+        <div class="field-group">
+          <label class="field-label">Subtareas</label>
+          <div class="subtask-input-row">
+            <input type="text" class="field-input" id="fSubtask" placeholder="Agregar subtarea..." />
+            <button class="btn-inline" id="btnAddSubtask">+</button>
+          </div>
+          <ul class="subtask-list" id="subtaskList"></ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-ghost" id="btnCancelar">Cancelar</button>
+        <button class="btn-primary" id="btnGuardar">Guardar tarea</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ MODAL NUEVA MATERIA ════════════════ -->
+  <div class="modal-overlay" id="modalMateriaOverlay">
+    <div class="modal modal-small" id="modalMateria">
+      <div class="modal-header">
+        <h2>Nueva materia</h2>
+        <button class="modal-close" id="modalMateriaClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-group">
+          <label class="field-label">Nombre de la materia</label>
+          <input type="text" class="field-input" id="fNombreMateria" placeholder="Ej: Cálculo" maxlength="40" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" id="btnCancelarMateria">Cancelar</button>
+        <button class="btn-primary" id="btnGuardarMateria">Crear materia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ MODAL RECOMENDACIÓN ════════════════ -->
+  <div class="modal-overlay" id="modalRecomOverlay">
+    <div class="modal recom-modal-wrap" id="modalRecom">
+      <div class="modal-header">
+        <h2>🎯 ¿Por dónde empiezo?</h2>
+        <button class="modal-close" id="modalRecomClose">✕</button>
+      </div>
+      <div class="modal-body" id="recomBody">
+        <!-- Contenido generado dinámicamente -->
+      </div>
+      <div class="modal-footer" id="recomFooter">
+        <!-- Botones generados dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ TOAST ════════════════ -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
